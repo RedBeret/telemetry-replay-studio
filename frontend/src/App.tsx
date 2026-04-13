@@ -147,6 +147,7 @@ const App = () => {
     const [error, setError] = useState("");
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [loadingDebrief, setLoadingDebrief] = useState(false);
+    const [copied, setCopied] = useState(false);
     const deferredSearch = useDeferredValue(search);
 
     const stepFrame = useCallback(
@@ -309,6 +310,17 @@ const App = () => {
         link.download = `${debrief.sessionId.toLowerCase()}-debrief.json`;
         link.click();
         URL.revokeObjectURL(url);
+    };
+
+    const copyDebrief = () => {
+        if (!debrief) {
+            return;
+        }
+
+        void navigator.clipboard.writeText(JSON.stringify(debrief, null, 2)).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
     };
 
     return (
@@ -573,13 +585,22 @@ const App = () => {
                             <p className="eyebrow">Debrief</p>
                             <h2>Operator handoff brief</h2>
                         </div>
-                        <button
-                            className="export-button"
-                            onClick={downloadDebrief}
-                            type="button"
-                        >
-                            Export JSON
-                        </button>
+                        <div className="debrief-actions">
+                            <button
+                                className="export-button"
+                                onClick={copyDebrief}
+                                type="button"
+                            >
+                                {copied ? "Copied" : "Copy JSON"}
+                            </button>
+                            <button
+                                className="export-button"
+                                onClick={downloadDebrief}
+                                type="button"
+                            >
+                                Export JSON
+                            </button>
+                        </div>
                     </div>
                     {loadingDebrief ? (
                         <p className="body-copy">Refreshing debrief...</p>
