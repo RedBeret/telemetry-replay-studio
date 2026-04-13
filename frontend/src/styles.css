@@ -422,6 +422,12 @@ select {
     font-size: 12px;
 }
 
+.debrief-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .frame-scrubber input[type="range"] {
     width: 100%;
     margin-bottom: 18px;
