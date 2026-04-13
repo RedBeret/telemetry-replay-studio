@@ -234,6 +234,16 @@ select {
     gap: 14px;
 }
 
+.empty-state,
+.checklist-block {
+    padding: 16px;
+    border: 1px dashed rgba(148, 163, 184, 0.22);
+    border-radius: 18px;
+    background: rgba(2, 6, 23, 0.24);
+    color: var(--muted);
+    line-height: 1.7;
+}
+
 .catalog-controls {
     grid-template-columns: 1.3fr 0.8fr;
     margin-bottom: 16px;
@@ -487,6 +497,12 @@ select {
     color: var(--muted);
 }
 
+.hint-copy {
+    margin: 0 0 14px;
+    color: #dbeafe;
+    font-size: 14px;
+}
+
 .focus-card em,
 .metric-row em {
     font-style: normal;
@@ -546,6 +562,16 @@ select {
 
 .note-list--compact {
     margin-top: 14px;
+}
+
+.checklist-block {
+    margin-top: 16px;
+}
+
+.checklist-block h3 {
+    margin: 0 0 12px;
+    font-family: Sora, "IBM Plex Sans", sans-serif;
+    font-size: 18px;
 }
 
 .footer-strip {

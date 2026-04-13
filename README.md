@@ -2,6 +2,8 @@
 
 Telemetry Replay Studio is a full-stack analysis workspace for replaying runs, comparing sessions, scoring outcomes, and exporting clean debrief summaries.
 
+![Telemetry Replay Studio preview](docs/preview.svg)
+
 The point of this project is to show a different side of the same engineering profile as `edge-lab-console`:
 
 - time-series and event-driven data modeling
@@ -28,6 +30,13 @@ This is designed to feel relevant to edge software, autonomy, platform, validati
 - Baseline comparison workflow with score deltas and focus areas
 - Debrief export endpoint that produces a clean JSON handoff report
 - Anomaly, artifact, and operator-note panels for session review
+
+## What This Demonstrates
+
+- Building a frontend around time-based state instead of simple forms and tables
+- Designing backend endpoints around analysis workflows and comparison views
+- Structuring operator-facing summaries that make noisy technical runs easier to review
+- Shipping a credible internal-tool style interface with clean handoff output
 
 ## Stack
 

@@ -259,6 +259,7 @@ const App = () => {
         activeFrameIndex,
         detail.timeline.length - 1
     );
+    const emptySessions = filteredSessions.length === 0;
 
     const downloadDebrief = () => {
         if (!debrief) {
@@ -291,6 +292,7 @@ const App = () => {
                         <span>Replay timeline</span>
                         <span>Baseline compare</span>
                         <span>Debrief export</span>
+                        <span>{detail.anomalies.length} review windows</span>
                     </div>
                 </div>
                 <div className="hero-panel">
@@ -357,35 +359,41 @@ const App = () => {
                             </select>
                         </label>
                     </div>
-                    <div className="session-list">
-                        {filteredSessions.map((session) => (
-                            <button
-                                key={session.id}
-                                className={`session-card session-card--button${
-                                    session.id === detail.id ? " is-active" : ""
-                                }`}
-                                onClick={() => setSelectedSessionId(session.id)}
-                                type="button"
-                            >
-                                <div className="session-card__top">
-                                    <div>
-                                        <strong>{session.title}</strong>
-                                        <span>{session.id}</span>
+                    {emptySessions ? (
+                        <div className="empty-state">
+                            No sessions match the current search and status filter.
+                        </div>
+                    ) : (
+                        <div className="session-list">
+                            {filteredSessions.map((session) => (
+                                <button
+                                    key={session.id}
+                                    className={`session-card session-card--button${
+                                        session.id === detail.id ? " is-active" : ""
+                                    }`}
+                                    onClick={() => setSelectedSessionId(session.id)}
+                                    type="button"
+                                >
+                                    <div className="session-card__top">
+                                        <div>
+                                            <strong>{session.title}</strong>
+                                            <span>{session.id}</span>
+                                        </div>
+                                        <span className={`badge badge--${session.status}`}>
+                                            {session.status}
+                                        </span>
                                     </div>
-                                    <span className={`badge badge--${session.status}`}>
-                                        {session.status}
-                                    </span>
-                                </div>
-                                <p>{session.summary}</p>
-                                <div className="session-meta">
-                                    <span>{session.environment}</span>
-                                    <span>{session.vehicle}</span>
-                                    <span>{session.anomalies} anomalies</span>
-                                    <span>score {session.score}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
+                                    <p>{session.summary}</p>
+                                    <div className="session-meta">
+                                        <span>{session.environment}</span>
+                                        <span>{session.vehicle}</span>
+                                        <span>{session.anomalies} anomalies</span>
+                                        <span>score {session.score}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </article>
 
                 <article className="panel panel--wide">
@@ -503,6 +511,9 @@ const App = () => {
                                     <strong>{comparison.largestWindow}</strong>
                                 </div>
                             </div>
+                            <p className="hint-copy">
+                                Recommendation: {comparison.recommendation}
+                            </p>
                             <p className="body-copy">{comparison.summary}</p>
                             <div className="focus-grid">
                                 {comparison.focusAreas.map((area) => (
@@ -555,6 +566,14 @@ const App = () => {
                                         ))}
                                     </ul>
                                 </div>
+                            </div>
+                            <div className="checklist-block">
+                                <h3>Artifact checklist</h3>
+                                <ul className="simple-list simple-list--stacked">
+                                    {debrief.artifactChecklist.map((item) => (
+                                        <li key={item}>{item}</li>
+                                    ))}
+                                </ul>
                             </div>
                         </>
                     ) : null}
