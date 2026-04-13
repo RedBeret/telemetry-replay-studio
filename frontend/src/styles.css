@@ -406,6 +406,22 @@ select {
     color: var(--muted);
 }
 
+.frame-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    white-space: nowrap;
+    color: var(--muted);
+    max-width: none !important;
+}
+
+.keyboard-hint {
+    font-style: normal;
+    opacity: 0.5;
+    font-size: 12px;
+}
+
 .frame-scrubber input[type="range"] {
     width: 100%;
     margin-bottom: 18px;

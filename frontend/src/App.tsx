@@ -1,4 +1,4 @@
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useCallback, useDeferredValue, useEffect, useState } from "react";
 
 type Overview = {
     sessions: number;
@@ -148,6 +148,40 @@ const App = () => {
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [loadingDebrief, setLoadingDebrief] = useState(false);
     const deferredSearch = useDeferredValue(search);
+
+    const stepFrame = useCallback(
+        (direction: 1 | -1) => {
+            if (!detail) {
+                return;
+            }
+
+            setActiveFrameIndex((current) =>
+                Math.max(0, Math.min(detail.signalFrames.length - 1, current + direction))
+            );
+        },
+        [detail]
+    );
+
+    useEffect(() => {
+        const handleKey = (event: KeyboardEvent) => {
+            if (
+                event.target instanceof HTMLInputElement ||
+                event.target instanceof HTMLSelectElement ||
+                event.target instanceof HTMLTextAreaElement
+            ) {
+                return;
+            }
+
+            if (event.key === "ArrowRight") {
+                stepFrame(1);
+            } else if (event.key === "ArrowLeft") {
+                stepFrame(-1);
+            }
+        };
+
+        window.addEventListener("keydown", handleKey);
+        return () => window.removeEventListener("keydown", handleKey);
+    }, [stepFrame]);
 
     useEffect(() => {
         fetch("/api/replay")
@@ -411,6 +445,10 @@ const App = () => {
                         <div className="frame-scrubber__top">
                             <strong>{activeFrame.time}</strong>
                             <span>{activeFrame.note}</span>
+                            <span className="frame-counter">
+                                Frame {activeFrameIndex + 1} of {detail.signalFrames.length}
+                                <em className="keyboard-hint"> · ← → to step</em>
+                            </span>
                         </div>
                         <input
                             type="range"
