@@ -1,48 +1,77 @@
 # Telemetry Replay Studio
 
-Telemetry Replay Studio is a full-stack analysis workspace for replaying runs, comparing sessions, scoring outcomes, and exporting clean debrief summaries.
+Telemetry Replay Studio is a post-run analysis workspace for edge and autonomy teams. A run finishes, you open the debrief, you need to know what happened and why, and you need to hand the result off cleanly. This is the tool for that moment.
 
-![Telemetry Replay Studio preview](docs/preview.svg)
+This is distinct from `edge-lab-console`. Edge-lab-console handles run configuration and execution. Telemetry Replay Studio handles what comes after: replay, drift detection, scoring, and team-ready handoff summaries.
 
-The point of this project is to show a different side of the same engineering profile as `edge-lab-console`:
+## What you do here
 
-- time-series and event-driven data modeling
-- replay and comparison workflows
-- operator-facing debrief UX
-- backend APIs that support analysis, not just CRUD
-- product thinking for noisy technical systems
+- Load a replay session and scrub through it frame by frame
+- See where behavior diverged from a baseline
+- Get a score that tells you at a glance whether the run is clean, degraded, or anomalous
+- Flag anomalies and artifacts during review
+- Export a debrief summary that a teammate can read without having the session open
 
-## Why This Project
+## Scoring rubric
 
-This is designed to feel relevant to edge software, autonomy, platform, validation, and developer-tooling teams. Instead of another generic dashboard, it focuses on the moment after a run finishes:
+Scores are 0-100. The scale is not decorative.
 
-1. What happened?
-2. Where did behavior drift?
-3. Which events actually mattered?
-4. How do we hand off the result clearly?
+| Score | Meaning |
+|-------|---------|
+| 90-100 | Run is within tolerance. Minor deviations only. Safe to proceed. |
+| 70-89  | Minor degradation. Review flagged events before handoff. |
+| 50-69  | Meaningful drift detected. Events require explanation before proceed. |
+| 30-49  | Significant anomalies. Run likely needs a retry. |
+| 0-29   | Critical failure. Do not proceed until root cause is identified and resolved. |
 
-## Current MVP
+### What gets flagged automatically
 
-- Session list with health, score, and status
-- Search and status filters for replay sessions
-- Replay scrubber with frame-by-frame signal snapshots
+- Any metric that exceeds its baseline threshold by more than 2 standard deviations
+- Missing telemetry frames (gaps in the signal)
+- Out-of-order event sequencing
+- Any operator-annotated anomaly: artifact, inconsistency, or unusual pattern
+
+Operator annotations carry weight. They can push a borderline score lower even if automatic metrics are nominal. This is intentional.
+
+## Comparison workflow
+
+Select a baseline session, then run a comparison against the current session.
+
+Baseline run, nominal:
+
+```
+Score: 94
+Health: NOMINAL
+Flags: 0
+Top events: [steer_correction @ 14.2s, sensor_fusion_recovery @ 31.7s]
+```
+
+Current run, same config, later date:
+
+```
+Score: 61
+Health: DEGRADED
+Delta: -33 points
+
+Flags:
+  - sensor_lag @ 9.1s (exceeded 2sigma threshold)
+  - gap_detected @ 22.4s (missing telemetry frame)
+  - steer_overshoot @ 47.2s (out-of-sequence)
+
+Top drift window: 18.0s - 35.0s
+Root cause suspect: sensor fusion pipeline on reinitialization
+```
+
+That delta is the product. You see the gap, the window where it opened, and what to look at first.
+
+## Features
+
+- Session list with health, score, and status filters
+- Frame-by-frame replay scrubber with signal snapshots
 - Timeline view with highlighted event windows
-- Baseline comparison workflow with score deltas and focus areas
-- Debrief export endpoint that produces a clean JSON handoff report
-- Anomaly, artifact, and operator-note panels for session review
-
-## What This Demonstrates
-
-- Building a frontend around time-based state instead of simple forms and tables
-- Designing backend endpoints around analysis workflows and comparison views
-- Structuring operator-facing summaries that make noisy technical runs easier to review
-- Shipping a credible internal-tool style interface with clean handoff output
-
-## Stack
-
-- Frontend: React, TypeScript, Vite
-- Backend: FastAPI
-- Data: mocked structured telemetry payloads for the first iteration
+- Baseline comparison with delta scoring and focus area isolation
+- Debrief export: clean JSON handoff report with scores, flags, and annotations
+- Anomaly panel, artifact panel, and operator notes per session
 
 ## Local Development
 
@@ -51,7 +80,7 @@ This is designed to feel relevant to edge software, autonomy, platform, validati
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8010
 ```
@@ -64,10 +93,12 @@ npm install
 npm run dev
 ```
 
-The Vite dev server proxies API traffic to `http://127.0.0.1:8010`.
+Vite proxies API traffic to `http://127.0.0.1:8010`.
 
 ## Verification
 
-- `python -m unittest discover -s backend\tests -v`
-- `python -m compileall backend\app`
-- `npm run build`
+```bash
+python -m unittest discover -s backend/tests -v
+python -m compileall backend/app
+npm run build
+```
