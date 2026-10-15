@@ -1,4 +1,4 @@
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useCallback, useDeferredValue, useEffect, useState } from "react";
 
 type Overview = {
     sessions: number;
@@ -147,7 +147,42 @@ const App = () => {
     const [error, setError] = useState("");
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [loadingDebrief, setLoadingDebrief] = useState(false);
+    const [copied, setCopied] = useState(false);
     const deferredSearch = useDeferredValue(search);
+
+    const stepFrame = useCallback(
+        (direction: 1 | -1) => {
+            if (!detail) {
+                return;
+            }
+
+            setActiveFrameIndex((current) =>
+                Math.max(0, Math.min(detail.signalFrames.length - 1, current + direction))
+            );
+        },
+        [detail]
+    );
+
+    useEffect(() => {
+        const handleKey = (event: KeyboardEvent) => {
+            if (
+                event.target instanceof HTMLInputElement ||
+                event.target instanceof HTMLSelectElement ||
+                event.target instanceof HTMLTextAreaElement
+            ) {
+                return;
+            }
+
+            if (event.key === "ArrowRight") {
+                stepFrame(1);
+            } else if (event.key === "ArrowLeft") {
+                stepFrame(-1);
+            }
+        };
+
+        window.addEventListener("keydown", handleKey);
+        return () => window.removeEventListener("keydown", handleKey);
+    }, [stepFrame]);
 
     useEffect(() => {
         fetch("/api/replay")
@@ -275,6 +310,17 @@ const App = () => {
         link.download = `${debrief.sessionId.toLowerCase()}-debrief.json`;
         link.click();
         URL.revokeObjectURL(url);
+    };
+
+    const copyDebrief = () => {
+        if (!debrief) {
+            return;
+        }
+
+        void navigator.clipboard.writeText(JSON.stringify(debrief, null, 2)).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
     };
 
     return (
@@ -411,6 +457,10 @@ const App = () => {
                         <div className="frame-scrubber__top">
                             <strong>{activeFrame.time}</strong>
                             <span>{activeFrame.note}</span>
+                            <span className="frame-counter">
+                                Frame {activeFrameIndex + 1} of {detail.signalFrames.length}
+                                <em className="keyboard-hint"> · ← → to step</em>
+                            </span>
                         </div>
                         <input
                             type="range"
@@ -535,13 +585,22 @@ const App = () => {
                             <p className="eyebrow">Debrief</p>
                             <h2>Operator handoff brief</h2>
                         </div>
-                        <button
-                            className="export-button"
-                            onClick={downloadDebrief}
-                            type="button"
-                        >
-                            Export JSON
-                        </button>
+                        <div className="debrief-actions">
+                            <button
+                                className="export-button"
+                                onClick={copyDebrief}
+                                type="button"
+                            >
+                                {copied ? "Copied" : "Copy JSON"}
+                            </button>
+                            <button
+                                className="export-button"
+                                onClick={downloadDebrief}
+                                type="button"
+                            >
+                                Export JSON
+                            </button>
+                        </div>
                     </div>
                     {loadingDebrief ? (
                         <p className="body-copy">Refreshing debrief...</p>
